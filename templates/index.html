@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Soundboard</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+  </head>
+  <body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-3">
+      <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1">Soundboard</span>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <button type="button" class="btn btn-outline-light btn-sm" id="btnSelectMode">
+            Select
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalUpload">
+            Upload clip
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalNewTab">
+            New tab
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid pb-5">
+      <div id="bulkBar" class="alert alert-secondary d-none mb-3 d-flex flex-wrap align-items-center gap-3">
+        <span><strong id="bulkCount">0</strong> selected</span>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <select class="form-select form-select-sm w-auto" id="bulkMoveTab" aria-label="Move to tab"></select>
+          <button type="button" class="btn btn-sm btn-primary" id="btnBulkMove">Move to tab</button>
+          <button type="button" class="btn btn-sm btn-danger" id="btnBulkDelete">Delete selected</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="btnClearSelection">
+            Clear
+          </button>
+        </div>
+      </div>
+
+      <ul class="nav nav-tabs flex-wrap" id="tabHeaders" role="tablist"></ul>
+      <div class="tab-content border border-top-0 rounded-bottom p-3 bg-white shadow-sm" id="tabPanels"></div>
+    </div>
+
+    <!-- Upload -->
+    <div class="modal fade" id="modalUpload" tabindex="-1" aria-labelledby="modalUploadLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalUploadLabel">Upload audio clip</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form id="formUpload" enctype="multipart/form-data">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Audio file (.mp3 or .wav)</label>
+                <input type="file" class="form-control" name="file" accept=".mp3,.wav,audio/mpeg,audio/wav" required />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Name</label>
+                <input type="text" class="form-control" name="name" required maxlength="120" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Description <span class="text-muted">(optional)</span></label>
+                <textarea class="form-control" name="description" rows="2" maxlength="500"></textarea>
+              </div>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Tab</label>
+                  <select class="form-select" name="tabId" id="uploadTabId" required></select>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Button color</label>
+                  <input type="color" class="form-control form-control-color w-100" name="color" value="#0d6efd" />
+                </div>
+              </div>
+              <div id="uploadError" class="text-danger small d-none"></div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Upload</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- New tab -->
+    <div class="modal fade" id="modalNewTab" tabindex="-1" aria-labelledby="modalNewTabLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalNewTabLabel">New tab</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form id="formNewTab">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Name</label>
+                <input type="text" class="form-control" name="name" required maxlength="80" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" name="description" rows="2" maxlength="500"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Background color</label>
+                <input type="color" class="form-control form-control-color w-100" name="backgroundColor" value="#212529" />
+              </div>
+              <div id="newTabError" class="text-danger small d-none"></div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Create</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit tab -->
+    <div class="modal fade" id="modalEditTab" tabindex="-1" aria-labelledby="modalEditTabLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalEditTabLabel">Edit tab</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form id="formEditTab">
+            <input type="hidden" name="id" id="editTabId" />
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Name</label>
+                <input type="text" class="form-control" name="name" id="editTabName" required maxlength="80" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" name="description" id="editTabDescription" rows="2" maxlength="500"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Background color</label>
+                <input type="color" class="form-control form-control-color w-100" name="backgroundColor" id="editTabBg" />
+              </div>
+              <div id="editTabError" class="text-danger small d-none"></div>
+            </div>
+            <div class="modal-footer justify-content-between">
+              <button type="button" class="btn btn-outline-danger" id="btnDeleteTab">Delete tab</button>
+              <div>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit button -->
+    <div class="modal fade" id="modalEditButton" tabindex="-1" aria-labelledby="modalEditButtonLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalEditButtonLabel">Edit clip</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form id="formEditButton" enctype="multipart/form-data">
+            <input type="hidden" name="id" id="editButtonId" />
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Replace audio <span class="text-muted">(optional)</span></label>
+                <input type="file" class="form-control" name="file" accept=".mp3,.wav,audio/mpeg,audio/wav" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Name</label>
+                <input type="text" class="form-control" name="name" id="editButtonName" required maxlength="120" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" name="description" id="editButtonDescription" rows="2" maxlength="500"></textarea>
+              </div>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Tab</label>
+                  <select class="form-select" name="tabId" id="editButtonTabId" required></select>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Button color</label>
+                  <input type="color" class="form-control form-control-color w-100" name="color" id="editButtonColor" />
+                </div>
+              </div>
+              <div id="editButtonError" class="text-danger small d-none"></div>
+            </div>
+            <div class="modal-footer justify-content-between">
+              <button type="button" class="btn btn-outline-danger" id="btnDeleteButton">Delete clip</button>
+              <div>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <script src="{{ url_for('static', filename='js/soundboard.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+  </body>
+</html>

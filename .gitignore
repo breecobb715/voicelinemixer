@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.Python
+venv/
+.venv/
+.env
+*.egg-info/
+.pytest_cache/
+.DS_Store
+
+# Local audio uploads and manifest (not committed)
+audio/

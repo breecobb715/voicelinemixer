@@ -1,0 +1,18 @@
+/* Soundboard layout tweaks */
+.sound-btn {
+  white-space: normal;
+  line-height: 1.2;
+  padding: 0.35rem 0.5rem;
+}
+
+.nav-tabs .nav-link {
+  color: #495057;
+}
+
+.nav-tabs .nav-link.active {
+  font-weight: 600;
+}
+
+.sound-cell .sound-select {
+  cursor: pointer;
+}
