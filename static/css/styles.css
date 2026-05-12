@@ -36,6 +36,19 @@
   z-index: 1;
 }
 
+.sound-tab-header-wrap.sound-tab-active {
+  border-top-left-radius: var(--bs-nav-tabs-border-radius);
+  border-top-right-radius: var(--bs-nav-tabs-border-radius);
+}
+
+.sound-tab-header-wrap > .nav-link {
+  padding-right: 5px;
+}
+
+.sound-tab-header-wrap .sound-tab-edit-btn {
+  color: rgba(17, 17, 17, 1);
+}
+
 #tabPanels {
   transition: background-color 0.12s ease;
 }

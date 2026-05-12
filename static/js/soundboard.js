@@ -47,14 +47,25 @@
       panels.style.backgroundColor = panelBg;
 
       headers.querySelectorAll("button.nav-link").forEach((link) => {
+        const wrap = link.parentElement;
         const id = link.id.startsWith("tab-") ? link.id.slice(4) : null;
         const t = id ? this.state.tabs.find((x) => x.id === id) : null;
         const bg = t?.backgroundColor || "#f8f9fa";
+        const isTabWrap = wrap?.classList?.contains("sound-tab-header-wrap");
+
         if (link.classList.contains("active")) {
-          link.style.backgroundColor = bg;
+          if (isTabWrap) {
+            wrap.style.backgroundColor = bg;
+            wrap.classList.add("sound-tab-active");
+          }
+          link.style.backgroundColor = "transparent";
           link.style.borderBottomColor = bg;
           link.style.color = this.contrastText(bg);
         } else {
+          if (isTabWrap) {
+            wrap.style.backgroundColor = "";
+            wrap.classList.remove("sound-tab-active");
+          }
           link.style.backgroundColor = "";
           link.style.borderBottomColor = "";
           link.style.color = "";
@@ -150,9 +161,11 @@
 
         const gear = document.createElement("button");
         gear.type = "button";
-        gear.className = "btn btn-link btn-sm py-0 px-1 ms-1 text-secondary";
+        gear.className =
+          "sound-tab-edit-btn btn btn-sm border-0 bg-transparent py-0 px-2 lh-1 align-self-stretch d-inline-flex align-items-center";
         gear.setAttribute("aria-label", "Edit tab");
-        gear.innerHTML = "&#9881;";
+        gear.innerHTML =
+          '<i class="bi bi-gear-fill" aria-hidden="true"></i>';
         gear.addEventListener("click", (ev) => {
           ev.stopPropagation();
           if (window.Admin && typeof Admin.openEditTab === "function") {
@@ -161,7 +174,8 @@
         });
 
         const wrap = document.createElement("div");
-        wrap.className = "d-inline-flex align-items-center";
+        wrap.className =
+          "sound-tab-header-wrap d-inline-flex align-items-stretch";
         wrap.appendChild(btn);
         wrap.appendChild(gear);
         li.appendChild(wrap);
