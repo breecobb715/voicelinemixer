@@ -33,6 +33,11 @@
 
 .nav-tabs .nav-link.active {
   font-weight: 600;
+  z-index: 1;
+}
+
+#tabPanels {
+  transition: background-color 0.12s ease;
 }
 
 .sound-cell .sound-select {

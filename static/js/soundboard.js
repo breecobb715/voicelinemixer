@@ -32,16 +32,46 @@
       });
     },
 
+    syncTabChrome() {
+      const headers = document.getElementById("tabHeaders");
+      const panels = document.getElementById("tabPanels");
+      if (!headers || !panels) return;
+
+      const activeBtn = headers.querySelector("button.nav-link.active");
+      const activeTabId = activeBtn?.id?.startsWith("tab-")
+        ? activeBtn.id.slice(4)
+        : this.activeTabId;
+      const activeTab = this.state.tabs.find((t) => t.id === activeTabId);
+      const panelBg = activeTab?.backgroundColor || "#f8f9fa";
+
+      panels.style.backgroundColor = panelBg;
+
+      headers.querySelectorAll("button.nav-link").forEach((link) => {
+        const id = link.id.startsWith("tab-") ? link.id.slice(4) : null;
+        const t = id ? this.state.tabs.find((x) => x.id === id) : null;
+        const bg = t?.backgroundColor || "#f8f9fa";
+        if (link.classList.contains("active")) {
+          link.style.backgroundColor = bg;
+          link.style.borderBottomColor = bg;
+          link.style.color = this.contrastText(bg);
+        } else {
+          link.style.backgroundColor = "";
+          link.style.borderBottomColor = "";
+          link.style.color = "";
+        }
+      });
+    },
+
     renderTabs() {
       const headers = document.getElementById("tabHeaders");
       const panels = document.getElementById("tabPanels");
       if (!headers || !panels) return;
 
+      headers.replaceChildren();
+      panels.replaceChildren();
+
       this.disposeTooltips(headers);
       this.disposeTooltips(panels);
-
-      headers.innerHTML = "";
-      panels.innerHTML = "";
 
       const addNewTabControl = () => {
         const li = document.createElement("li");
@@ -75,6 +105,7 @@
       );
 
       if (!tabs.length) {
+        panels.style.backgroundColor = "";
         addNewTabControl();
         return;
       }
@@ -110,6 +141,8 @@
           btn.title = tab.description.trim();
         }
 
+        btn.addEventListener("shown.bs.tab", () => this.syncTabChrome());
+
         btn.addEventListener("click", (e) => {
           if (e.shiftKey || e.ctrlKey || e.metaKey) return;
           this.activeTabId = tab.id;
@@ -135,7 +168,7 @@
         headers.appendChild(li);
 
         const panel = document.createElement("div");
-        panel.className = `tab-pane fade ${isActive ? "show active" : ""}`;
+        panel.className = `tab-pane fade p-3 ${isActive ? "show active" : ""}`;
         panel.id = `panel-${tab.id}`;
         panel.role = "tabpanel";
         panel.style.minHeight = "280px";
@@ -165,6 +198,8 @@
         ];
         tt.forEach((el) => new bootstrap.Tooltip(el));
       }
+
+      this.syncTabChrome();
     },
 
     contrastText(bgHex) {
