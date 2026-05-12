@@ -5,6 +5,28 @@
   padding: 0.35rem 0.5rem;
 }
 
+.sound-add-btn {
+  width: 140px;
+  height: 72px;
+  border: 2px dashed #6c757d;
+  border-radius: 0.375rem;
+  background-color: transparent;
+  color: #6c757d;
+  font-size: 2rem;
+  font-weight: 500;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sound-add-btn:hover,
+.sound-add-btn:focus-visible {
+  border-color: #495057;
+  color: #495057;
+  background-color: rgba(108, 117, 125, 0.08);
+}
+
 .nav-tabs .nav-link {
   color: #495057;
 }

@@ -150,6 +150,7 @@
 
         const tabButtons = this.buttonsForTab(tab.id);
         tabButtons.forEach((b) => grid.appendChild(this.renderButton(b)));
+        grid.appendChild(this.renderAddButton(tab.id));
 
         panel.appendChild(grid);
         panels.appendChild(panel);
@@ -247,6 +248,27 @@
       wrap.appendChild(cb);
       wrap.appendChild(b);
       wrap.appendChild(hint);
+      return wrap;
+    },
+
+    renderAddButton(tabId) {
+      const wrap = document.createElement("div");
+      wrap.className = "sound-cell position-relative";
+
+      const addButton = document.createElement("button");
+      addButton.type = "button";
+      addButton.className = "sound-btn sound-add-btn btn text-center align-middle";
+      addButton.setAttribute("aria-label", "Upload new clip");
+      addButton.textContent = "+";
+      addButton.addEventListener("click", () => {
+        this.activeTabId = tabId;
+        if (!window.bootstrap) return;
+        const modalEl = document.getElementById("modalUpload");
+        if (!modalEl) return;
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+      });
+
+      wrap.appendChild(addButton);
       return wrap;
     },
 
