@@ -45,6 +45,89 @@
       el.classList.toggle("d-none", !msg);
     },
 
+    normalizeHexColor(value) {
+      if (typeof value !== "string") return "";
+      let hex = value.trim();
+      if (!hex) return "";
+      if (hex.startsWith("#")) {
+        hex = hex.slice(1);
+      }
+      if (/^[0-9a-fA-F]{3}$/.test(hex)) {
+        hex = hex
+          .split("")
+          .map((ch) => ch + ch)
+          .join("");
+      }
+      if (!/^[0-9a-fA-F]{6}$/.test(hex)) return "";
+      return `#${hex.toUpperCase()}`;
+    },
+
+    syncSwatchGroup(inputId) {
+      const input = document.getElementById(inputId);
+      const group = document.querySelector(
+        `.color-swatch-grid[data-input-id="${inputId}"]`
+      );
+      if (!input || !group) return;
+      const swatches = [...group.querySelectorAll(".color-swatch[data-color]")];
+      const normalizedValue = this.normalizeHexColor(input.value);
+      if (normalizedValue) {
+        input.value = normalizedValue;
+      }
+
+      let selected = false;
+      swatches.forEach((swatch, idx) => {
+        const swatchColor = this.normalizeHexColor(swatch.dataset.color);
+        swatch.dataset.color = swatchColor;
+        swatch.style.backgroundColor = swatchColor || "#FFFFFF";
+        const isSelected = Boolean(swatchColor) && swatchColor === normalizedValue;
+        swatch.classList.toggle("is-selected", isSelected);
+        swatch.setAttribute("aria-pressed", isSelected ? "true" : "false");
+        if (isSelected) selected = true;
+        if (!swatchColor) swatch.disabled = true;
+        swatch.dataset.index = String(idx);
+      });
+
+      if (!selected && !normalizedValue && swatches[0]?.dataset.color) {
+        input.value = swatches[0].dataset.color;
+        swatches[0].classList.add("is-selected");
+        swatches[0].setAttribute("aria-pressed", "true");
+      }
+    },
+
+    setColorInputValue(inputId, color) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const normalizedColor = this.normalizeHexColor(color);
+      if (normalizedColor) {
+        input.value = normalizedColor;
+      }
+      this.syncSwatchGroup(inputId);
+    },
+
+    syncSwatchesInForm(form) {
+      if (!form) return;
+      form.querySelectorAll(".color-swatch-grid[data-input-id]").forEach((group) => {
+        const inputId = group.dataset.inputId;
+        if (inputId) this.syncSwatchGroup(inputId);
+      });
+    },
+
+    initColorSwatches() {
+      document.querySelectorAll(".color-swatch-grid[data-input-id]").forEach((group) => {
+        const inputId = group.dataset.inputId;
+        if (!inputId) return;
+        group.querySelectorAll(".color-swatch[data-color]").forEach((swatch) => {
+          const swatchColor = this.normalizeHexColor(swatch.dataset.color);
+          swatch.dataset.color = swatchColor;
+          swatch.style.backgroundColor = swatchColor || "#FFFFFF";
+          swatch.addEventListener("click", () => {
+            this.setColorInputValue(inputId, swatch.dataset.color);
+          });
+        });
+        this.syncSwatchGroup(inputId);
+      });
+    },
+
     modalUpload() {
       return document.getElementById("modalUpload");
     },
@@ -64,8 +147,7 @@
       document.getElementById("editTabId").value = tab.id;
       document.getElementById("editTabName").value = tab.name;
       document.getElementById("editTabDescription").value = tab.description || "";
-      document.getElementById("editTabBg").value =
-        tab.backgroundColor || "#212529";
+      this.setColorInputValue("editTabBg", tab.backgroundColor || "#F8F9FA");
       this.showError("editTabError", "");
       const m = bootstrap.Modal.getOrCreateInstance(
         document.getElementById("modalEditTab")
@@ -82,8 +164,7 @@
       document.getElementById("editButtonDescription").value =
         btn.description || "";
       document.getElementById("editButtonTabId").value = btn.tabId;
-      document.getElementById("editButtonColor").value =
-        btn.color || "#0d6efd";
+      this.setColorInputValue("editButtonColor", btn.color || "#4059AD");
       const fileInput = document.querySelector("#formEditButton input[name=file]");
       if (fileInput) fileInput.value = "";
       this.showError("editButtonError", "");
@@ -94,6 +175,8 @@
     },
 
     init() {
+      this.initColorSwatches();
+
       document.addEventListener("shown.bs.tab", (ev) => {
         const t = ev.target;
         if (!t || !t.id || !t.id.startsWith("tab-")) return;
@@ -137,6 +220,7 @@
           }
           bootstrap.Modal.getInstance(this.modalUpload())?.hide();
           form.reset();
+          this.syncSwatchesInForm(form);
           await this.refreshState();
         } catch (err) {
           this.showError("uploadError", err.message || "Upload failed");
@@ -165,6 +249,7 @@
           }
           bootstrap.Modal.getInstance(document.getElementById("modalNewTab"))?.hide();
           e.target.reset();
+          this.syncSwatchesInForm(e.target);
           await this.refreshState();
         } catch (err) {
           this.showError("newTabError", err.message || "Failed");
