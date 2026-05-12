@@ -24,8 +24,20 @@ MANIFEST_PATH = AUDIO_DIR / "manifest.json"
 ALLOWED_EXTENSIONS = {".mp3", ".wav"}
 MAX_BUTTONS_PER_TAB = 30
 
+MAX_BUTTON_NAME_LEN = 50
+MAX_BUTTON_DESCRIPTION_LEN = 100
+MAX_TAB_NAME_LEN = 75
+MAX_TAB_DESCRIPTION_LEN = 100
+
 DEFAULT_TAB_BG = "#F8F9FA"
 DEFAULT_BUTTON_COLOR = "#4059AD"
+
+
+def reject_if_over_max(label: str, value: str, max_len: int) -> str | None:
+    """Return error message if stripped value exceeds max_len; otherwise None."""
+    if len(value) > max_len:
+        return f"{label} must be at most {max_len} characters"
+    return None
 
 
 def utc_now_iso() -> str:
@@ -220,7 +232,13 @@ def create_app() -> Flask:
         name = (body.get("name") or "").strip()
         if not name:
             return jsonify({"error": "Tab name is required"}), 400
+        err = reject_if_over_max("Tab name", name, MAX_TAB_NAME_LEN)
+        if err:
+            return jsonify({"error": err}), 400
         description = (body.get("description") or "").strip()
+        err = reject_if_over_max("Tab description", description, MAX_TAB_DESCRIPTION_LEN)
+        if err:
+            return jsonify({"error": err}), 400
         bg = (body.get("backgroundColor") or DEFAULT_TAB_BG).strip()
         tid = str(uuid.uuid4())
         now = utc_now_iso()
@@ -248,9 +266,16 @@ def create_app() -> Flask:
             n = (body.get("name") or "").strip()
             if not n:
                 return jsonify({"error": "Tab name cannot be empty"}), 400
+            err = reject_if_over_max("Tab name", n, MAX_TAB_NAME_LEN)
+            if err:
+                return jsonify({"error": err}), 400
             tab["name"] = n
         if "description" in body:
-            tab["description"] = (body.get("description") or "").strip()
+            d = (body.get("description") or "").strip()
+            err = reject_if_over_max("Tab description", d, MAX_TAB_DESCRIPTION_LEN)
+            if err:
+                return jsonify({"error": err}), 400
+            tab["description"] = d
         if "backgroundColor" in body:
             tab["backgroundColor"] = (body.get("backgroundColor") or DEFAULT_TAB_BG).strip()
         tab["updatedAt"] = utc_now_iso()
@@ -284,6 +309,12 @@ def create_app() -> Flask:
             return jsonify({"error": "Valid tab is required"}), 400
         if not name:
             return jsonify({"error": "Name is required"}), 400
+        err = reject_if_over_max("Name", name, MAX_BUTTON_NAME_LEN)
+        if err:
+            return jsonify({"error": err}), 400
+        err = reject_if_over_max("Description", description, MAX_BUTTON_DESCRIPTION_LEN)
+        if err:
+            return jsonify({"error": err}), 400
         if count_buttons_on_tab(data, tab_id) >= MAX_BUTTONS_PER_TAB:
             return jsonify({"error": f"Tab already has {MAX_BUTTONS_PER_TAB} buttons"}), 400
         f = request.files.get("file")
@@ -340,9 +371,16 @@ def create_app() -> Flask:
             n = new_name.strip()
             if not n:
                 return jsonify({"error": "Name cannot be empty"}), 400
+            err = reject_if_over_max("Name", n, MAX_BUTTON_NAME_LEN)
+            if err:
+                return jsonify({"error": err}), 400
             btn["name"] = n
         if new_desc is not None:
-            btn["description"] = new_desc.strip()
+            d = new_desc.strip()
+            err = reject_if_over_max("Description", d, MAX_BUTTON_DESCRIPTION_LEN)
+            if err:
+                return jsonify({"error": err}), 400
+            btn["description"] = d
         if new_color is not None:
             btn["color"] = new_color.strip() or DEFAULT_BUTTON_COLOR
 
