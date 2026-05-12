@@ -43,11 +43,41 @@
       headers.innerHTML = "";
       panels.innerHTML = "";
 
+      const addNewTabControl = () => {
+        const li = document.createElement("li");
+        li.className = "nav-item";
+        li.role = "presentation";
+
+        const wrap = document.createElement("div");
+        wrap.className = "d-inline-flex align-items-center";
+
+        const addTabBtn = document.createElement("button");
+        addTabBtn.type = "button";
+        addTabBtn.className = "btn btn-link btn-sm py-0 px-1 ms-1 text-secondary";
+        addTabBtn.setAttribute("aria-label", "Create new tab");
+        addTabBtn.textContent = "+";
+        addTabBtn.addEventListener("click", (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          if (!window.bootstrap) return;
+          const modalEl = document.getElementById("modalNewTab");
+          if (!modalEl) return;
+          bootstrap.Modal.getOrCreateInstance(modalEl).show();
+        });
+
+        wrap.appendChild(addTabBtn);
+        li.appendChild(wrap);
+        headers.appendChild(li);
+      };
+
       const tabs = [...this.state.tabs].sort((a, b) =>
         a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
       );
 
-      if (!tabs.length) return;
+      if (!tabs.length) {
+        addNewTabControl();
+        return;
+      }
 
       if (!this.activeTabId || !tabs.some((t) => t.id === this.activeTabId)) {
         const defaultTab =
@@ -124,6 +154,8 @@
         panel.appendChild(grid);
         panels.appendChild(panel);
       });
+
+      addNewTabControl();
 
       if (window.bootstrap) {
         const tt = [
