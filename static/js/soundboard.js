@@ -235,6 +235,7 @@
     renderButton(btn) {
       const wrap = document.createElement("div");
       wrap.className = "sound-cell position-relative";
+      const textColor = this.contrastText(btn.color);
 
       const cb = document.createElement("input");
       cb.type = "checkbox";
@@ -259,7 +260,7 @@
         "sound-btn btn border-0 shadow-sm text-center align-middle";
       b.textContent = btn.name;
       b.style.backgroundColor = btn.color || "#0d6efd";
-      b.style.color = this.contrastText(btn.color);
+      b.style.color = textColor;
       b.style.width = "140px";
       b.style.height = "72px";
       b.style.overflow = "hidden";
@@ -281,22 +282,24 @@
         this.playClip(btn.filePath);
       });
 
-      b.addEventListener("contextmenu", (ev) => {
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className =
+        "sound-btn-edit-trigger btn btn-sm border-0 shadow-sm d-inline-flex align-items-center justify-content-center";
+      editBtn.setAttribute("aria-label", `Edit ${btn.name}`);
+      editBtn.innerHTML = '<i class="bi bi-gear-fill" aria-hidden="true"></i>';
+      editBtn.style.color = "#111";
+      editBtn.addEventListener("click", (ev) => {
         ev.preventDefault();
+        ev.stopPropagation();
         if (window.Admin && typeof Admin.openEditButton === "function") {
           Admin.openEditButton(btn.id);
         }
       });
 
-      const hint = document.createElement("small");
-      hint.className = "user-select-none d-block mt-1 text-center small";
-      hint.style.maxWidth = "140px";
-      hint.style.opacity = "0.85";
-      hint.textContent = "Right-click to edit";
-
       wrap.appendChild(cb);
       wrap.appendChild(b);
-      wrap.appendChild(hint);
+      wrap.appendChild(editBtn);
       return wrap;
     },
 
