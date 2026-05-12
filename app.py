@@ -24,8 +24,8 @@ MANIFEST_PATH = AUDIO_DIR / "manifest.json"
 ALLOWED_EXTENSIONS = {".mp3", ".wav"}
 MAX_BUTTONS_PER_TAB = 30
 
-DEFAULT_TAB_BG = "#212529"
-DEFAULT_BUTTON_COLOR = "#0d6efd"
+DEFAULT_TAB_BG = "#F8F9FA"
+DEFAULT_BUTTON_COLOR = "#4059AD"
 
 
 def utc_now_iso() -> str:
